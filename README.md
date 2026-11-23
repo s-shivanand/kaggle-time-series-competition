@@ -2,7 +2,7 @@
 
 Forecast 16 days of daily sales by item and store for 54 Ecuadorian grocery stores. [Kaggle competition](https://www.kaggle.com/competitions/favorita-grocery-sales-forecasting)
 
-**[Open the live Streamlit dashboard](https://gx3zmjtv3cwmufmnpwhjbe.streamlit.app/)**
+**[Open the live Streamlit dashboard](https://kaggle-grocery-sale-forecast.streamlit.app/)**
 
 | Model notebook | Original Kaggle private score ↓ |
 | --- | ---: |
