@@ -61,7 +61,7 @@ No fitted notebook uses a local holdout, validation dates, a backtest, or a loca
 
 The lowest reported private score is 1.09747. The results do not provide a controlled comparison of feature contributions. Each local submission has the expected columns, 3,370,464 IDs in sample order, and finite nonnegative values. The SHA-256 hashes identify the audited local bytes. Matching a filename or preview does not establish that the local file is byte-identical to the upload.
 
-The rolling LightGBM notebook keeps lags of 3, 7, and 14 observations and rolling means of 3, 7, 14, and 21 observations. Its final cell exports `lightgbm_lag3_7_14_21_with_features.csv` under the raw-data directory. The saved submission uses the `lightgbm_mean_lag3_7_14_21_with_features.csv` filename in `data/submission/`. The maximum absolute difference across the first five saved predictions and the inverse-transformed notebook preview is about `1.14e-6`. The recorded Kaggle score applies to the original upload. The [reproduction notebook](../notebooks/01_lightgbm.ipynb) and [command-line workflow](../README.md#replay-the-rolling-lightgbm-submission) call the same Python modules and can compare every output row with the saved artifact. Both produced CSVs identical to the original notebook's output on a small fixture.
+The rolling LightGBM notebook keeps lags of 3, 7, and 14 observations and rolling means of 3, 7, 14, and 21 observations. Its final cell exports `lightgbm_lag3_7_14_21_with_features.csv` under the raw-data directory. The saved submission uses the `lightgbm_mean_lag3_7_14_21_with_features.csv` filename in `data/submission/`. The maximum absolute difference across the first five saved predictions and the inverse-transformed notebook preview is about `1.14e-6`. The recorded Kaggle score applies to the original upload. The [reproduction notebook](../notebooks/01_lightgbm.ipynb) and [command-line workflow](#command-line-runs) call the same Python modules and can compare every output row with the saved artifact. Both produced CSVs identical to the original notebook's output on a small fixture.
 
 The [XGBoost reproduction notebook](../notebooks/02_xgboost.ipynb) uses the same Python modules with the commented XGBoost configuration from `SKS_xgboost_moving_avg_minimal.ipynb` and omits the 21-observation mean on both sides. Its 3-, 7-, and 14-observation lags and means differ from the archived lag-16 experiment in `SKS_xgboost_moving_avg.ipynb`. It matched the minimal rolling notebook with the author-specified edits on a fixture. Agreement with the archived competition CSV remains unverified.
 
@@ -80,3 +80,43 @@ The [XGBoost reproduction notebook](../notebooks/02_xgboost.ipynb) uses the same
 - All enriched notebooks join oil by forecast date, including 12 actual oil prices dated after the fixed August 15 origin. The enriched variants remain historical experiments. The two basic workflows use calendar, identifier, and test-supplied promotion inputs.
 - The local Darwin arm64 environment uses Python 3.14.4, pandas 3.0.5, NumPy 2.5.2, scikit-learn 1.9.0, XGBoost 3.4.0, LightGBM 4.7.0, and Matplotlib 3.11.1. The modeling notebooks declare Python 3.14.4 and the historical EDA declares Python 3.13.14. The local package versions are observed environment evidence. The original runs have no tracked dependency lockfile or fitted model artifact.
 - The training CSV is 4.7 GB on disk. Chunked reading limits the input buffer, but the modeling notebooks concatenate the retained rows and fit in memory. An approved full replay should record its environment and numerical differences from the applicable saved evidence.
+
+## Command-line runs
+
+Run these commands from the repository root after extracting the Kaggle CSVs to `data/raw/favorita-grocery-sales-forecasting/`.
+
+### Basic models
+
+```bash
+uv run --locked --no-group app python -m src.run --run basic-lightgbm \
+  --data-dir data/raw/favorita-grocery-sales-forecasting \
+  --output data/reproduction/reproduced_lightgbm.csv
+```
+
+Use `--run basic-xgboost` and a new output filename for the basic XGBoost run. On macOS the model libraries may need the OpenMP runtime.
+
+### Rolling LightGBM
+
+```bash
+uv run --locked --exact --no-group app python -m src.replay_rolling_lightgbm \
+  --data-dir data/raw/favorita-grocery-sales-forecasting \
+  --output data/reproduction/lightgbm_mean_lag3_7_14_21_with_features.csv \
+  --reference data/submission/lightgbm_mean_lag3_7_14_21_with_features.csv
+```
+
+The optional reference check reports exact matches, matches within `rtol=1e-6` and `atol=1e-6`, and the mean and maximum absolute prediction differences. Choose a fresh output path for each run.
+
+### Tests and dashboard data
+
+```bash
+OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=1 uv run --locked python -m unittest discover -s tests -v
+```
+
+Regenerate the dashboard chart excerpts from the source history and the saved basic LightGBM submission.
+
+```bash
+uv run --locked --no-default-groups python -m src.prepare_visualization_data \
+  --data-dir data/raw/favorita-grocery-sales-forecasting \
+  --submission data/submission/submission_lightgbm.csv \
+  --output-dir artifacts
+```
