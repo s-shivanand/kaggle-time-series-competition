@@ -6,6 +6,8 @@ The lowest reported private score across five late submissions was **1.09747** f
 
 ## Browse the results
 
+[Open the live Streamlit dashboard](https://gx3zmjtv3cwmufmnpwhjbe.streamlit.app/).
+
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run commands from the repository root. The project pins Python 3.14.4 in `.python-version` and uses `uv.lock` for reproducible installs. `uv sync --locked` sets up the default environment for modeling, the app, and tests.
 
 ```bash
