@@ -24,6 +24,17 @@ def predict_submission(
     return submission
 
 
+def predict_rolling_submission(
+    pipeline: Pipeline, features: pd.DataFrame, sample: pd.DataFrame
+) -> pd.DataFrame:
+    """Apply the historical inverse transform and positional template assignment."""
+    result = sample.copy()
+    result["unit_sales"] = pipeline.predict(features)
+    result["unit_sales"] = np.maximum(0, result["unit_sales"])
+    result["unit_sales"] = np.expm1(result["unit_sales"])
+    return result
+
+
 def write_submission(
     frame: pd.DataFrame, expected_ids: pd.Series, output: Path
 ) -> None:

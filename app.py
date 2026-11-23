@@ -193,8 +193,8 @@ def show_models() -> None:
         hide_index=True,
     )
     st.caption(
-        "The two basic notebooks can be replayed from Python. The three enriched "
-        "runs remain documented in the research notebooks."
+        "Python workflows reproduce the two basic runs. The rolling reproduction "
+        "notebooks can compare new LightGBM and XGBoost forecasts with their archived CSVs."
     )
 
 
@@ -286,7 +286,9 @@ def show_deployment() -> None:
     )
     show_sales_chart("example_forecast.csv", "Forecast unit sales", "#3464AD")
     with st.expander("Run the app locally"):
-        st.code("python -m streamlit run app.py", language="bash")
+        st.code(
+            "uv run --locked --no-group models streamlit run app.py", language="bash"
+        )
 
 
 def main() -> None:

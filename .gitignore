@@ -29,8 +29,6 @@ AGENTS.md
 AGENTS.override.md
 /PLAN.md
 
-# ignore .toml
+# Ignore local TOML settings and track the uv project manifest
 *.toml
-
-#ignore uv.lock
-uv.lock
+!/pyproject.toml

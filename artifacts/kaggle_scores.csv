@@ -2,5 +2,5 @@ kaggle_submission,private_score,public_score,local_file,provenance
 submission_lightgbm.csv,1.48557,1.45230,submission_lightgbm.csv,Filename and saved basic LightGBM notebook preview agree.
 submission_xgboost.csv,1.47656,1.44706,submission_xgboost.csv,Filename matches Kaggle. The basic XGBoost notebook preview differs.
 xgboost_lag3_7_14_with_features.csv,1.19868,1.17484,xgboost_lag3_7_14.csv,The local filename differs and the exact notebook recipe is unavailable.
-xgboost_mean_lag3_7_14_with_features.csv,1.09747,1.11674,xgboost_mean_lag3_7_14_with_features.csv,Filename matches Kaggle. The available rolling XGBoost notebook uses lag 16.
-lightgbm_mean_lag3_7_14_21_with_features.csv,1.11764,1.13637,lightgbm_mean_lag3_7_14_21_with_features.csv,The inverse-transformed preview agrees with the local CSV. The notebook export filename differs.
+xgboost_mean_lag3_7_14_with_features.csv,1.09747,1.11674,xgboost_mean_lag3_7_14_with_features.csv,The author specified the minimal notebook with XGBoost enabled and the 21-observation mean omitted. Full-file replay remains unverified.
+lightgbm_mean_lag3_7_14_21_with_features.csv,1.11764,1.13637,lightgbm_mean_lag3_7_14_21_with_features.csv,The author confirmed the rolling LightGBM notebook. The first five preview values agree after inverse transformation.
