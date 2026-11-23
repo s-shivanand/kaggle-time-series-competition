@@ -8,11 +8,15 @@ from io import StringIO
 from pathlib import Path
 from shutil import copyfile
 from tempfile import TemporaryDirectory
+from typing import Any
 from unittest.mock import patch
 
+import joblib
 import pandas as pd
 
+from src.prediction import predict_rolling_submission
 from src.replay_rolling_lightgbm import replay
+from src.training import save_trained_pipeline
 
 ROOT = Path(__file__).resolve().parents[1]
 ORIGINAL_NOTEBOOK = ROOT / "notebooks" / "SKS_xgboost_moving_avg_minimal.ipynb"
@@ -64,7 +68,7 @@ def prepare_fixture(directory: Path) -> None:
 
 def execute_notebook_cells(
     notebook: Path, directory: Path, *, activate_xgboost: bool = False
-) -> None:
+) -> dict[str, Any]:
     """Execute a notebook's code cells on the fixture without a Jupyter dependency."""
     cells = json.loads(notebook.read_bytes())["cells"]
     namespace: dict[str, object] = {}
@@ -76,6 +80,7 @@ def execute_notebook_cells(
             if activate_xgboost:
                 source = xgboost_source_cell(number, source)
             exec(source, namespace)
+    return namespace
 
 
 def xgboost_source_cell(number: int, source: str) -> str:
@@ -95,6 +100,18 @@ def xgboost_source_cell(number: int, source: str) -> str:
 
 
 class RollingModelTests(unittest.TestCase):
+    def assert_saved_pipeline_matches(
+        self, model_path: Path, result_path: Path, test_features: pd.DataFrame
+    ) -> None:
+        pipeline = joblib.load(model_path)
+        sample = pd.read_csv(result_path)
+        forecast = predict_rolling_submission(pipeline, test_features, sample)
+        self.assertEqual(forecast.to_csv(index=False).encode(), result_path.read_bytes())
+        model_bytes = model_path.read_bytes()
+        with self.assertRaises(FileExistsError):
+            save_trained_pipeline(pipeline, model_path)
+        self.assertEqual(model_path.read_bytes(), model_bytes)
+
     def test_cli_runner_and_new_notebook_match_the_original(self) -> None:
         with TemporaryDirectory() as directory, redirect_stdout(StringIO()):
             root = Path(directory)
@@ -103,7 +120,7 @@ class RollingModelTests(unittest.TestCase):
             inputs = root / "data" / "raw" / "favorita-grocery-sales-forecasting"
             prepare_fixture(inputs)
 
-            execute_notebook_cells(ORIGINAL_NOTEBOOK, notebooks)
+            original = execute_notebook_cells(ORIGINAL_NOTEBOOK, notebooks)
             reference = inputs / "lightgbm_lag3_7_14_21_with_features.csv"
             output = root / "cli" / SUBMISSION_FILENAME
             with self.assertLogs("src.replay_rolling_lightgbm", level="INFO") as logs:
@@ -123,6 +140,9 @@ class RollingModelTests(unittest.TestCase):
             self.assertIn("6 rows, 6 exact", notebook_output.getvalue())
             reproduced = root / "data" / "reproduction" / SUBMISSION_FILENAME
             self.assertEqual(reproduced.read_bytes(), reference.read_bytes())
+            self.assert_saved_pipeline_matches(
+                root / "models" / "lightgbm.joblib", reproduced, original["X_test"]
+            )
 
     def test_xgboost_notebook_matches_the_edited_source_recipe(self) -> None:
         with TemporaryDirectory() as directory, redirect_stdout(StringIO()):
@@ -133,7 +153,9 @@ class RollingModelTests(unittest.TestCase):
             inputs = root / "data" / "raw" / "favorita-grocery-sales-forecasting"
             prepare_fixture(inputs)
 
-            execute_notebook_cells(ORIGINAL_NOTEBOOK, notebooks, activate_xgboost=True)
+            original = execute_notebook_cells(
+                ORIGINAL_NOTEBOOK, notebooks, activate_xgboost=True
+            )
             archived = root / "data" / "submission" / XGBOOST_SUBMISSION
             archived.parent.mkdir()
             copyfile(inputs / XGBOOST_SUBMISSION, archived)
@@ -144,6 +166,9 @@ class RollingModelTests(unittest.TestCase):
             result = root / "data" / "reproduction" / XGBOOST_SUBMISSION
             self.assertEqual(result.read_bytes(), archived.read_bytes())
             self.assertGreater(pd.read_csv(result)["unit_sales"].nunique(), 1)
+            self.assert_saved_pipeline_matches(
+                root / "models" / "xgboost.joblib", result, original["X_test"]
+            )
 
 
 if __name__ == "__main__":

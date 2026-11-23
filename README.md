@@ -25,6 +25,6 @@ Extract the [Kaggle CSVs](https://www.kaggle.com/competitions/favorita-grocery-s
 uv run --locked --no-group app --group notebooks jupyter lab notebooks/
 ```
 
-The notebooks write CSVs to `data/reproduction/`. Both matched their source recipes on small test fixtures. Full-data matches to the original submissions remain unverified.
+The notebooks write CSVs to `data/reproduction/` and fitted pipelines to `models/lightgbm.joblib` and `models/xgboost.joblib`. Both full-data CSVs matched the local archived submissions byte for byte.
 
 [Methods, limitations, and command-line runs](docs/BASELINE.md)

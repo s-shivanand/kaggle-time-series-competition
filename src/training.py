@@ -1,9 +1,13 @@
-"""Fit the original basic models and historical rolling models."""
+"""Fit and save the original forecasting pipelines."""
 
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import TYPE_CHECKING
 
+import joblib
 import pandas as pd
 from sklearn.pipeline import Pipeline
+from sklearn.utils.validation import check_is_fitted
 
 from src.features import XGBOOST_ROLLING_WINDOWS
 from src.preprocessing import (
@@ -82,3 +86,15 @@ def fit_rolling_xgboost(
         ]
     )
     return pipeline.fit(features, target, model__sample_weight=weights)
+
+
+def save_trained_pipeline(pipeline: Pipeline, output: Path) -> None:
+    """Save the fitted preprocessing and estimator without overwriting a model."""
+    if output.exists():
+        raise FileExistsError(f"Choose a new model path. {output} already exists")
+    check_is_fitted(pipeline)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with TemporaryDirectory(dir=output.parent) as directory:
+        temporary = Path(directory) / "pipeline.joblib"
+        joblib.dump(pipeline, temporary, compress=3)
+        output.hardlink_to(temporary)
