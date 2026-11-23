@@ -51,5 +51,3 @@ python -m src.prepare_visualization_data \
   --submission data/submission/submission_lightgbm.csv \
   --output-dir artifacts
 ```
-
-The [implementation plan](PLAN.md) tracks scope and acceptance criteria. [Project rules](AGENTS.md) explain how the notebook baseline is preserved.
