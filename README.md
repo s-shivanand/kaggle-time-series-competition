@@ -9,6 +9,8 @@ Forecast 16 days of daily sales by item and store for 54 Ecuadorian grocery stor
 | [LightGBM](notebooks/01_lightgbm.ipynb) | 1.11764 |
 | [XGBoost](notebooks/02_xgboost.ipynb) | 1.09747 |
 
+Trained pipelines: [LightGBM](models/lightgbm.joblib) and [XGBoost](models/xgboost.joblib).
+
 ## Run locally
 
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and run this from the repository root. The dashboard uses saved results.
@@ -25,6 +27,6 @@ Extract the [Kaggle CSVs](https://www.kaggle.com/competitions/favorita-grocery-s
 uv run --locked --no-group app --group notebooks jupyter lab notebooks/
 ```
 
-The notebooks write CSVs to `data/reproduction/` and fitted pipelines to `models/lightgbm.joblib` and `models/xgboost.joblib`. Both full-data CSVs matched the local archived submissions byte for byte.
+The notebooks write CSVs to `data/reproduction/` and new pipelines to `models/reproduced/`. Both full-data CSVs matched the local archived submissions byte for byte.
 
 [Methods, limitations, and command-line runs](docs/BASELINE.md)

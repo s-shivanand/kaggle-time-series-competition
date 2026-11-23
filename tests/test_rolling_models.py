@@ -135,14 +135,20 @@ class RollingModelTests(unittest.TestCase):
             archived = root / "data" / "submission" / SUBMISSION_FILENAME
             archived.parent.mkdir()
             copyfile(reference, archived)
+            published = root / "models" / "lightgbm.joblib"
+            published.parent.mkdir()
+            published.write_bytes(b"published model")
             with redirect_stdout(StringIO()) as notebook_output:
                 execute_notebook_cells(REPRODUCTION_NOTEBOOK, notebooks)
             self.assertIn("6 rows, 6 exact", notebook_output.getvalue())
             reproduced = root / "data" / "reproduction" / SUBMISSION_FILENAME
             self.assertEqual(reproduced.read_bytes(), reference.read_bytes())
             self.assert_saved_pipeline_matches(
-                root / "models" / "lightgbm.joblib", reproduced, original["X_test"]
+                root / "models" / "reproduced" / "lightgbm.joblib",
+                reproduced,
+                original["X_test"],
             )
+            self.assertEqual(published.read_bytes(), b"published model")
 
     def test_xgboost_notebook_matches_the_edited_source_recipe(self) -> None:
         with TemporaryDirectory() as directory, redirect_stdout(StringIO()):
@@ -167,7 +173,9 @@ class RollingModelTests(unittest.TestCase):
             self.assertEqual(result.read_bytes(), archived.read_bytes())
             self.assertGreater(pd.read_csv(result)["unit_sales"].nunique(), 1)
             self.assert_saved_pipeline_matches(
-                root / "models" / "xgboost.joblib", result, original["X_test"]
+                root / "models" / "reproduced" / "xgboost.joblib",
+                result,
+                original["X_test"],
             )
 
 

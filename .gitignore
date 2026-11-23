@@ -1,8 +1,10 @@
 # Ignore the data directory
 data/
 
-# Fitted pipelines produced by the notebooks
-/models/*.joblib
+# Keep the verified models and ignore fresh training outputs
+/models/**/*.joblib
+!/models/lightgbm.joblib
+!/models/xgboost.joblib
 
 # Python cache
 __pycache__/
